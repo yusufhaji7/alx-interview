@@ -1,51 +1,122 @@
 #!/usr/bin/python3
-"""program that solves the N queens problem."""
-from sys import argv, exit
+"""
+   N queens puzzle 
+"""
 
 
-if len(argv) != 2:
-    print("Usage: nqueens N")
-    exit(1)
-
-N = argv[1]
-
-try:
-    N = int(N)
-except ValueError:
-    print("N must be a number")
-    exit(1)
-
-if N < 4:
-    print("N must be at least 4")
-    exit(1)
-
-solution = []
+import sys
 
 
-def nqueens(row, N, solution):
-    """The program should print any possible solution"""
-    if (row == N):
-        print(solution)
-    else:
-        for col in range(N):
-            position = [row, col]
-            if validposition(solution, position):
-                solution.append(position)
-                nqueens(row + 1, N, solution)
-                solution.remove(position)
+def print_board(board):
+    """ print_board
+    Args:
+        board - list of list with length sys.argv[1]
+    """
+    new_list = []
+    for i, row in enumerate(board):
+        value = []
+        for j, col in enumerate(row):
+            if col == 1:
+                value.append(i)
+                value.append(j)
+        new_list.append(value)
+
+    print(new_list)
 
 
-def validposition(solution, position):
-    """validate horizontal and diagonal position of queens"""
-    for queen in solution:
-        if queen[1] == position[1]:
+def isSafe(board, row, col, number):
+    """ isSafe
+    Args:
+        board - list of list with length sys.argv[1]
+        row - row to check if is safe doing a movement in this position
+        col - col to check if is safe doing a movement in this position
+        number: size of the board
+    Return: True of False
+    """
+
+    # Check this row in the left side
+    for i in range(col):
+        if board[row][i] == 1:
             return False
-        # descending diagonal
-        if (queen[0] - queen[1]) == (position[0] - position[1]):
+
+    # Check upper diagonal on left side
+    for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+        if board[i][j] == 1:
             return False
-        # ascending diagonal
-        if (queen[0] + queen[1]) == (position[0] + position[1]):
+
+    for i, j in zip(range(row, number, 1), range(col, -1, -1)):
+        if board[i][j] == 1:
             return False
+
     return True
 
-nqueens(0, N, solution)
+
+def solveNQUtil(board, col, number):
+    """ Aux
+    Args:
+        board - Board to resolve
+        col - Number of col
+        number - size of the board
+    Returns:
+        All the posibilites 
+    """
+
+    if (col == number):
+        print_board(board)
+        return True
+    res = False
+    for i in range(number):
+
+        if (isSafe(board, i, col, number)):
+
+          
+            board[i][col] = 1
+
+            res = solveNQUtil(board, col + 1, number) or res
+
+            board[i][col] = 0  
+
+    return res
+
+
+def solve(number):
+    """ Find all the posibilities if exists
+    Args:
+        number - size of the board
+    """
+    board = [[0 for i in range(number)]for i in range(number)]
+
+    if not solveNQUtil(board, 0, number):
+        return False
+
+    return True
+
+
+def validate(args):
+    """ Validate the input data to verify if the size to
+        answer is posible
+    Args:
+        args - sys.argv
+    """
+    if (len(args) == 2):
+        # Validate data
+        try:
+            number = int(args[1])
+        except Exception:
+            print("N must be a number")
+            exit(1)
+        if number < 4:
+            print("N must be at least 4")
+            exit(1)
+        return number
+    else:
+        print("Usage: nqueens N")
+        exit(1)
+
+
+if __name__ == "__main__":
+    """ Main method to execute the application
+    """
+
+    number = validate(sys.argv)
+    solve(number)
